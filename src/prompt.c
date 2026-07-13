@@ -1,4 +1,5 @@
 #include "shell.h"
+#include "job.h"
 #include <pwd.h>
 
 char *get_prompt(void)
@@ -42,14 +43,21 @@ void setup_signals(void)
     signal(SIGINT, SIG_IGN);
     // 忽略 SIGTSTP (Ctrl+Z)
     signal(SIGTSTP, SIG_IGN);
+    // 忽略 SIGTTOU 和 SIGTTIN，防止 tcsetpgrp 时 Shell 自身被停止
+    signal(SIGTTOU, SIG_IGN);
+    signal(SIGTTIN, SIG_IGN);
     // 处理 SIGCHLD，回收后台子进程，避免僵尸进程
     signal(SIGCHLD, sigchld_handler);
 }
 
 void sigchld_handler(int sig)
 {
-    // 非阻塞回收所有已终止的子进程
+    // 非阻塞回收所有已终止的子进程，并更新作业状态
     (void)sig;
-    while (waitpid(-1, NULL, WNOHANG) > 0)
-        ;
+    int status;
+    pid_t pid;
+    while ((pid = waitpid(-1, &status, WNOHANG)) > 0)
+    {
+        update_job_status(pid, status);
+    }
 }

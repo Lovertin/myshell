@@ -40,6 +40,20 @@ void print_history(void)
     }
 }
 
+void print_history_n(int n)
+{
+    int total = (hist.count < MAX_HISTORY) ? hist.count : MAX_HISTORY;
+    int start_idx = (hist.count < MAX_HISTORY) ? 0 : hist.start;
+
+    // 显示最近 n 条
+    int begin = (total > n) ? total - n : 0;
+    for (int i = begin; i < total; i++)
+    {
+        int idx = (start_idx + i) % MAX_HISTORY;
+        printf("%5d  %s\n", i + 1, hist.entries[idx]);
+    }
+}
+
 char *expand_history(const char *cmd)
 {
     if (cmd[0] != '!')
