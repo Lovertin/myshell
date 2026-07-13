@@ -5,19 +5,24 @@
 #include "history.h"
 #include "alias.h"
 #include "completion.h"
+#include "job.h"
 #include <readline/readline.h>
 #include <readline/history.h>
 
 int main(int argc, char *argv[])
 {
-    // 初始化：历史记录、别名表、readline 补全
+    // 初始化：历史记录、别名表、作业控制、readline 补全
     init_history();
     init_alias();
+    init_jobs();
     init_completion();
     setup_signals();
 
     while (1)
     {
+        // 清理已完成的作业
+        clean_done_jobs();
+
         // 1. 通过 readline 读取输入（自带提示符和 Tab 补全支持）
         char *prompt = get_prompt();
         char *cmd_line = readline(prompt);
@@ -54,17 +59,17 @@ int main(int argc, char *argv[])
         free(cmd_line);
         cmd_line = alias_expanded;
 
-        // 6. 解析命令行
-        Pipeline pipeline = parse_command(cmd_line);
+        // 6. 解析复合命令（支持 ;、&&、||）
+        CompoundCommand compound = parse_compound(cmd_line);
 
-        // 7. 执行
-        if (pipeline.num_commands > 0)
+        // 7. 执行复合命令
+        if (compound.num_pipelines > 0)
         {
-            execute_pipeline(&pipeline);
+            execute_compound(&compound);
         }
 
         free(cmd_line);
-        free_pipeline(&pipeline);
+        free_compound(&compound);
     }
 
     cleanup();
@@ -75,4 +80,5 @@ void cleanup(void)
 {
     free_history();
     free_alias();
+    free_jobs();
 }

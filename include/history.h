@@ -11,6 +11,7 @@ typedef struct
 void init_history(void);
 void add_to_history(const char *cmd);
 void print_history(void);
+void print_history_n(int n); // 显示最近 n 条历史
 char *expand_history(const char *cmd);
 void free_history(void);
 

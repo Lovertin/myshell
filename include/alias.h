@@ -18,6 +18,8 @@ void set_alias(const char *name, const char *value);
 void remove_alias(const char *name);
 char *expand_alias(const char *cmd);
 void print_aliases(void);
+void print_alias(const char *name); // 显示指定别名的定义
+char *get_alias(const char *name);  // 获取指定别名的值
 void free_alias(void);
 
 #endif

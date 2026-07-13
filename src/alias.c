@@ -57,8 +57,27 @@ void remove_alias(const char *name)
     fprintf(stderr, "unalias: %s: not found\n", name);
 }
 
+char *get_alias(const char *name)
+{
+    for (int i = 0; i < alias_list.count; i++)
+    {
+        if (strcmp(alias_list.entries[i].name, name) == 0)
+        {
+            return alias_list.entries[i].value;
+        }
+    }
+    return NULL;
+}
+
 char *expand_alias(const char *cmd)
 {
+    // 检查是否以 \ 开头（临时绕过别名）
+    if (cmd[0] == '\\')
+    {
+        // 去掉反斜杠，返回不带别名展开的命令
+        return strdup(cmd + 1);
+    }
+
     // 提取第一个词
     char *cmd_copy = strdup(cmd);
     char *first_word = strtok(cmd_copy, " \t");
@@ -99,6 +118,21 @@ void print_aliases(void)
                alias_list.entries[i].name,
                alias_list.entries[i].value);
     }
+}
+
+void print_alias(const char *name)
+{
+    for (int i = 0; i < alias_list.count; i++)
+    {
+        if (strcmp(alias_list.entries[i].name, name) == 0)
+        {
+            printf("alias %s='%s'\n",
+                   alias_list.entries[i].name,
+                   alias_list.entries[i].value);
+            return;
+        }
+    }
+    fprintf(stderr, "alias: %s: not found\n", name);
 }
 
 void free_alias(void)
